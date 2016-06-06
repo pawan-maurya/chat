@@ -4,9 +4,12 @@ var app = express();
 var moment = require('moment');
 var http = require('http').Server(app);             //Create a http server that use express app
 
+var systemName = 'System';                          //Defining a system name for showing when system display any message
+
 //After installing socket.io on server, now installing it into our app
 var io = require('socket.io')(http);                //This is the format that socket.io expectss
 
+var clientInfo = {};
 
 app.use(express.static(__dirname + '/public'));     //telling app to use public folder. __dirname is default app location.
 
@@ -14,18 +17,29 @@ app.use(express.static(__dirname + '/public'));     //telling app to use public 
 io.on('connection', function (socket) {                   //call a function on a connection event. it's like a jquery event "Like on click".
     console.log('User connected via Socket.io!');
     
+    // Function for the same specified event 'joinRoom'
+    socket.on('joinRoom', function (req) {              // req is the object that I created in joinRoom event in app.js
+        clientInfo[socket.id] = req;
+        socket.join(req.room);                          // socket.join is a built in method
+        socket.broadcast.to(req.room).emit('message', {
+            name: systemName,
+            text: req.name + ' has joined!',
+            timestamp: moment().valueOf()
+        });
+    });
+    
     socket.on('message', function (message) {
         console.log('Message Recieved: ' + message.text);
         
         message.timeStamp = moment().valueOf();             // valueOf() is the javascript milisecond version. 
         
         //socket.broadcast.emit('message', message);        // Messages displayed to all others
-        io.emit('message', message);                        // Messages displayed to all and my self also.
+        io.to(clientInfo[socket.id].room).emit('message', message);                        // Messages displayed to all and my self also.
         
     });
     
     socket.emit('message', {
-        name: 'System',
+        name: systemName,
         text: 'Welcome to the Chat application!',
         timeStamp: moment().valueOf()
     });

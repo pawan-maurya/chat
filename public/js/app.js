@@ -5,8 +5,18 @@ var socket = io();                      // io() function is not defining by me i
 
 console.log(name + ' wants to join ' + room);
 
+//Display Room Name:
+jQuery('.room-title').text(room);
+
 socket.on('connect', function () {
-   console.log('connected to socket.io server!');
+    console.log('connected to socket.io server!');
+    
+    //Creating custom event when someone join the room
+    socket.emit('joinRoom', {
+        name: name,
+        room: room
+    });
+    
 });
 
 socket.on('message', function (message) {
