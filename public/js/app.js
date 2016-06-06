@@ -1,5 +1,9 @@
+var name = getQueryVariable('name') || 'Anonymous';    // After adding QueryParams.js file
+var room = getQueryVariable('room');
 var socket = io();                      // io() function is not defining by me it's into the socket.io library.
                                         // This is important to connect from server using socket.io
+
+console.log(name + ' wants to join ' + room);
 
 socket.on('connect', function () {
    console.log('connected to socket.io server!');
@@ -7,12 +11,14 @@ socket.on('connect', function () {
 
 socket.on('message', function (message) {
     var momentTimeStamp = moment.utc(message.timeStamp);
-        
+    
+    var $conversation = jQuery('.conversation');
+    
     console.log('New Message: ' + message.text);
     
     // Show messages in conversation div.
-    jQuery('.conversation').append('<p><span style="font-size=6px;">' + momentTimeStamp.local().format('h:mm a') + ': </span>' + message.text + '</p>') ;
-    
+    $conversation.append('<p><strong>' + ' ' + message.name + ' ' + momentTimeStamp.local().format('h:mm a') + ': </strong></p>');
+    $conversation.append('<p>' + message.text + '</p>');
 });
 
 
@@ -26,7 +32,8 @@ $form.on('submit', function () {
     event.preventDefault();
     
     socket.emit('message', {
-       text: inputOfMsg.val()
+        name: name,
+        text: inputOfMsg.val()
     });
     
     inputOfMsg.val('');                         // clear the text field after message sent.

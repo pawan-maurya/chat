@@ -25,6 +25,7 @@ io.on('connection', function (socket) {                   //call a function on a
     });
     
     socket.emit('message', {
+        name: 'System',
         text: 'Welcome to the Chat application!',
         timeStamp: moment().valueOf()
     });
