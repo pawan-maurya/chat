@@ -28,6 +28,25 @@ io.on('connection', function (socket) {                   //call a function on a
         });
     });
     
+    // Function for when user leave a room
+    socket.on('disconnect', function () {               // disconnect is a built in event 
+        var userData = clientInfo[socket.id];
+        
+        if(typeof userData !== 'undefined'){
+            socket.leave(userData.room);                // socket.leave is a built in method like socket.join
+            
+            // now desplay message when user leave
+            io.to(userData.room).emit('message', {
+                name: systemName,
+                text: userData.name + ' has left!',
+                timestamp: moment().valueOf()
+            });
+            
+            // Deleting clientInfo
+            delete userData;
+        }
+    });
+    
     socket.on('message', function (message) {
         console.log('Message Recieved: ' + message.text);
         
@@ -37,6 +56,8 @@ io.on('connection', function (socket) {                   //call a function on a
         io.to(clientInfo[socket.id].room).emit('message', message);                        // Messages displayed to all and my self also.
         
     });
+    
+    
     
     socket.emit('message', {
         name: systemName,
